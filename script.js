@@ -12,6 +12,8 @@ chatForm.addEventListener("submit", (e) => {
 
   // When using Cloudflare, you'll need to POST a `messages` array in the body,
   // and handle the response using: data.choices[0].message.content
+   // Replace with your Cloudflare Worker URL
+  message.push({ role: "user", content: userInput.value });
 
   // Show message
   chatWindow.innerHTML = "Connect to the OpenAI API for a response!";

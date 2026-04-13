@@ -141,3 +141,8 @@ body {
 .site-footer a:hover {
   color: #666666;
 }
+img.logo {
+  display: block;
+  margin: 20px auto;
+  max-width: 200px;
+}
