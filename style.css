@@ -5,12 +5,16 @@
   padding: 0;
 }
 
+/* —— L'Oréal brand colors —— */
+/* Gold: #C4A35A | Dark: #1A1A1A | Gold hover: #9B7A35 | Background: #F5EDD6 */
+
 /* —— body + fonts —— */
 body {
   font-family: "Montserrat", Arial, Helvetica, sans-serif;
-  color: #333;
+  color: #1a1a1a;
   display: flex;
   justify-content: center;
+  background-color: #fff;
 }
 
 .page-wrapper {
@@ -25,8 +29,10 @@ body {
 }
 
 .site-title {
-  font-size: 22px;
-  font-weight: 500;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   margin-bottom: 10px;
 }
 
@@ -37,12 +43,12 @@ body {
 
 .chat-window {
   height: 360px;
-  border: 1px solid #000;
+  border: 1px solid #c4a35a;
   padding: 20px;
   font-size: 18px;
   line-height: 1.5;
   overflow-y: auto;
-  background: #fafafa;
+  background: #f5edd6;
   white-space: pre-line;
 }
 
@@ -53,11 +59,11 @@ body {
 }
 
 .msg.user {
-  color: #000;
+  color: #1a1a1a;
 }
 
 .msg.ai {
-  color: #666666;
+  color: #9b7a35;
 }
 
 /* input row */
@@ -70,18 +76,18 @@ body {
 .chat-form input {
   flex: 1;
   padding: 12px;
-  border: 1px solid #ccc;
+  border: 1px solid #c4a35a;
   font-size: 18px;
 }
 
 .chat-form input:focus {
-  outline: 2px solid #000;
+  outline: 2px solid #c4a35a;
   outline-offset: 2px;
 }
 
 .chat-form button {
   font-size: 18px;
-  background: #000;
+  background: #c4a35a;
   color: #fff;
   border: none;
   padding: 12px;
@@ -99,11 +105,11 @@ body {
 }
 
 .chat-form button:hover {
-  background: #666666;
+  background: #9b7a35;
 }
 
 .chat-form button:focus {
-  outline: 2px solid #000;
+  outline: 2px solid #c4a35a;
   outline-offset: 2px;
 }
 
@@ -134,12 +140,12 @@ body {
 
 .site-footer a {
   margin: 0 8px;
-  color: #000;
+  color: #c4a35a;
   text-decoration: none;
 }
 
 .site-footer a:hover {
-  color: #666666;
+  color: #9b7a35;
 }
 img.logo {
   display: block;
