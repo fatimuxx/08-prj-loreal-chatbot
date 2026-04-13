@@ -2,22 +2,40 @@
 const chatForm = document.getElementById("chatForm");
 const userInput = document.getElementById("userInput");
 const chatWindow = document.getElementById("chatWindow");
+const latestQuestion = document.getElementById("latestQuestion");
 
 // System prompt — tells the AI how to behave
 // This is sent with every request to guide the AI's responses
 const messages = [
   {
     role: "system",
-    content: `You are a knowledgeable and friendly L'Oréal beauty advisor. 
-You only answer questions related to L'Oréal products, skincare routines, haircare routines, and beauty recommendations. 
-If a user asks about anything unrelated to L'Oréal or beauty, politely let them know you can only help with L'Oréal-related topics and redirect them to ask about products or routines.
-Always recommend specific L'Oréal product lines when relevant (e.g., Revitalift, EverPure, Elvive, True Match).
-Keep your answers helpful, concise, and encouraging.`,
+    content: `You are a knowledgeable and friendly L'Oréal beauty advisor.
+
+Your expertise covers ONLY these topics:
+- L'Oréal products and product lines (e.g., Revitalift, EverPure, Elvive, True Match, Age Perfect, Infallible)
+- Skincare routines and advice (cleansing, moisturizing, SPF, anti-aging, etc.)
+- Haircare routines and advice (washing, conditioning, styling, color care, etc.)
+- Beauty tips, makeup application, and ingredient recommendations related to L'Oréal
+
+If a user asks about ANYTHING outside these topics — including but not limited to politics, sports, technology, food, travel, or other brands — you must:
+1. Politely decline to answer that specific question
+2. Remind the user that you are only able to assist with L'Oréal beauty topics
+3. Suggest a related L'Oréal topic they could ask about instead
+
+Example refusal: "I'm only able to help with L'Oréal beauty topics! I can't assist with that, but I'd love to recommend a skincare routine or help you find the perfect L'Oréal product. What can I help you with?"
+
+Always be warm, encouraging, and on-brand.`,
   },
 ];
 
 // Set initial message in the chat window
 chatWindow.innerHTML = `<div class="msg ai">👋 Hello! How can I help you today?</div>`;
+
+// Simple in-browser memory for better multi-turn conversations
+const conversationMemory = {
+  userName: null,
+  pastQuestions: [],
+};
 
 /* Add a message bubble to the chat window */
 function addMessage(role, text) {
@@ -27,21 +45,64 @@ function addMessage(role, text) {
   chatWindow.appendChild(div);
   // Scroll to the latest message
   chatWindow.scrollTop = chatWindow.scrollHeight;
+  return div;
+}
+
+/* Try to detect the user's name from a message like "my name is Ana" */
+function updateUserName(userText) {
+  const nameMatch = userText.match(
+    /\b(?:my name is|i am|i'm)\s+([a-z][a-z'\-]*)\b/i,
+  );
+  if (nameMatch && nameMatch[1]) {
+    const rawName = nameMatch[1];
+    const cleanName =
+      rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
+    conversationMemory.userName = cleanName;
+  }
+}
+
+/* Keep the last 5 user questions so the assistant can reference context */
+function updatePastQuestions(userText) {
+  conversationMemory.pastQuestions.push(userText);
+  if (conversationMemory.pastQuestions.length > 5) {
+    conversationMemory.pastQuestions.shift();
+  }
+}
+
+/* Build a short system note with remembered conversation details */
+function buildMemorySystemMessage() {
+  const nameText = conversationMemory.userName
+    ? `Known user name: ${conversationMemory.userName}.`
+    : "Known user name: unknown.";
+
+  const questionsText = conversationMemory.pastQuestions.length
+    ? `Recent user questions: ${conversationMemory.pastQuestions.join(" | ")}`
+    : "Recent user questions: none yet.";
+
+  return {
+    role: "system",
+    content: `${nameText} ${questionsText} Use this context to give natural, multi-turn replies.`,
+  };
 }
 
 /* Send the conversation to OpenAI and get a response */
 async function getAIResponse() {
-  // Call the OpenAI Chat Completions API
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  // Send the original prompt + memory note + full chat history
+  const messagesWithMemory = [
+    messages[0],
+    buildMemorySystemMessage(),
+    ...messages.slice(1),
+  ];
+
+  // Call the Cloudflare Worker (which securely calls OpenAI server-side)
+  const response = await fetch("https://lorealchatbot.farodr12.workers.dev/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      // API key stored in secrets.js as: const OPENAI_API_KEY = "sk-..."
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
       model: "gpt-4o",
-      messages: messages, // full conversation history including system prompt
+      messages: messagesWithMemory,
     }),
   });
 
@@ -66,8 +127,15 @@ chatForm.addEventListener("submit", async (e) => {
   const userText = userInput.value.trim();
   if (!userText) return;
 
+  // Update memory from the latest user message
+  updateUserName(userText);
+  updatePastQuestions(userText);
+
   // Add the user's message to the conversation history
   messages.push({ role: "user", content: userText });
+
+  // Show only the latest question above the chat response area
+  latestQuestion.textContent = `Latest question: ${userText}`;
 
   // Display the user's message in the chat window
   addMessage("user", userText);
@@ -76,14 +144,13 @@ chatForm.addEventListener("submit", async (e) => {
   userInput.value = "";
 
   // Show a loading message while waiting for the API
-  addMessage("ai", "Thinking…");
+  const thinkingMsg = addMessage("ai", "Thinking...");
 
   // Call the API and display the response
   await getAIResponse();
 
   // Remove the "Thinking…" message
-  const thinkingMsg = chatWindow.querySelector(".msg.ai:last-of-type");
-  if (thinkingMsg && thinkingMsg.textContent === "Thinking…") {
+  if (thinkingMsg && thinkingMsg.parentNode) {
     chatWindow.removeChild(thinkingMsg);
   }
 });

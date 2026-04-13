@@ -41,6 +41,15 @@ body {
   margin: 40px 0;
 }
 
+.latest-question {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-left: 4px solid #c4a35a;
+  background: #fbf6e8;
+  font-size: 15px;
+  color: #1a1a1a;
+}
+
 .chat-window {
   height: 360px;
   border: 1px solid #c4a35a;
@@ -50,20 +59,35 @@ body {
   overflow-y: auto;
   background: #f5edd6;
   white-space: pre-line;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* messages */
 .msg {
-  margin-bottom: 14px;
+  margin-bottom: 0;
   line-height: 1.5;
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  word-wrap: break-word;
 }
 
 .msg.user {
-  color: #1a1a1a;
+  color: #fff;
+  background: #1a1a1a;
+  align-self: flex-end;
+  border-bottom-right-radius: 6px;
 }
 
 .msg.ai {
-  color: #9b7a35;
+  color: #1a1a1a;
+  background: #fff;
+  border: 1px solid #e7d8af;
+  align-self: flex-start;
+  border-bottom-left-radius: 6px;
 }
 
 /* input row */
@@ -151,4 +175,15 @@ img.logo {
   display: block;
   margin: 20px auto;
   max-width: 200px;
+}
+
+@media (max-width: 640px) {
+  .chat-window {
+    padding: 14px;
+    font-size: 16px;
+  }
+
+  .msg {
+    max-width: 90%;
+  }
 }
